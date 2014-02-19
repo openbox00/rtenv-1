@@ -681,11 +681,10 @@ void show_task_info(int argc, char* argv[])
 
 		write(fdout, &task_info_pid , 2);
 		write_blank(3);
-			write(fdout, &task_info_status , 2);
+		write(fdout, &task_info_status , 2);
 		write_blank(5);
 		write(fdout, &task_info_priority , 3);
 		printf("%s",next_line);
-		//write(fdout, &next_line , 3);
 	}
 	printf("%s",next_line);
 }
