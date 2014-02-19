@@ -5,6 +5,8 @@
 
 #include <stddef.h>
 
+#include "print.h"
+
 void *memcpy(void *dest, const void *src, size_t n);
 
 int strcmp(const char *a, const char *b) __attribute__ ((naked));
@@ -434,8 +436,9 @@ void serial_readwrite_task()
 void serial_test_task()
 {
 	char put_ch[2]={'0','\0'};
-	char hint[] =  USER_NAME "@" USER_NAME "-STM32:~$ ";
-	int hint_length = sizeof(hint);
+	//char hint[] =  USER_NAME "@" USER_NAME "-STM32:~$ ";
+	char *str = USER_NAME "@" USER_NAME "-STM32:~$ ";
+	//int hint_length = sizeof(hint);
 	char *p = NULL;
 	int cmd_count = 0;
 
@@ -443,26 +446,30 @@ void serial_test_task()
 	fdin = open("/dev/tty0/in", 0);
 
 	for (;; cur_his = (cur_his + 1) % HISTORY_COUNT) {
-		p = cmd[cur_his];
-		write(fdout, hint, hint_length);
+		p = &cmd[cur_his];
+		printf("%s", str);
+//		write(fdout, hint, hint_length);
 
 		while (1) {
 			read(fdin, put_ch, 1);
 
 			if (put_ch[0] == '\r' || put_ch[0] == '\n') {
 				*p = '\0';
-				write(fdout, next_line, 3);
+				printf("%s",next_line);
+				//write(fdout, next_line, 3);
 				break;
 			}
 			else if (put_ch[0] == 127 || put_ch[0] == '\b') {
 				if (p > cmd[cur_his]) {
 					p--;
-					write(fdout, "\b \b", 4);
+					printf("\b \b");
+					//write(fdout, "\b \b", 4);
 				}
 			}
 			else if (p - cmd[cur_his] < CMDBUF_SIZE - 1) {
 				*p++ = put_ch[0];
-				write(fdout, put_ch, 2);
+				printf("%c",put_ch[0]);
+				//write(fdout, put_ch, 2);
 			}
 		}
 		check_keyword();	
@@ -535,9 +542,12 @@ void check_keyword()
 		}
 	}
 	if (i == CMD_COUNT) {
-		write(fdout, argv[0], strlen(argv[0]) + 1);
-		write(fdout, ": command not found", 20);
-		write(fdout, next_line, 3);
+		//write(fdout, argv[0], strlen(argv[0]) + 1);
+		//write(fdout, ": command not found", 20);
+		printf("%s",argv[0]);
+		printf(": command not found");
+		printf("%s",next_line);
+		//write(fdout, next_line, 3);
 	}
 }
 
@@ -643,6 +653,7 @@ void export_envvar(int argc, char *argv[])
 			env_count++;
 		}
 	}
+	printf("%s",next_line);
 }
 
 //ps
@@ -673,13 +684,14 @@ void show_task_info(int argc, char* argv[])
 			write(fdout, &task_info_status , 2);
 		write_blank(5);
 		write(fdout, &task_info_priority , 3);
-
-		write(fdout, &next_line , 3);
+		printf("%s",next_line);
+		//write(fdout, &next_line , 3);
 	}
+	printf("%s",next_line);
 }
 
 //this function helps to show int
-
+#if 0
 void itoa(int n, char *dst, int base)
 {
 	char buf[33] = {0};
@@ -699,14 +711,14 @@ void itoa(int n, char *dst, int base)
 
 	strcpy(dst, p);
 }
-
+#endif
 //help
 
 void show_cmd_info(int argc, char* argv[])
 {
 	const char help_desp[] = "This system has commands as follow\n\r\0";
 	int i;
-
+#if 0
 	write(fdout, &help_desp, sizeof(help_desp));
 	for (i = 0; i < CMD_COUNT; i++) {
 		write(fdout, cmd_data[i].cmd, strlen(cmd_data[i].cmd) + 1);
@@ -714,6 +726,15 @@ void show_cmd_info(int argc, char* argv[])
 		write(fdout, cmd_data[i].description, strlen(cmd_data[i].description) + 1);
 		write(fdout, next_line, 3);
 	}
+#endif
+	printf("%s",help_desp);
+	for (i = 0; i < CMD_COUNT; i++) {
+		printf("%s",cmd_data[i].cmd);
+		printf("\t: ");
+		printf("%s",cmd_data[i].description);
+		printf("%s",next_line);
+	}
+
 }
 
 //echo
@@ -737,7 +758,8 @@ void show_echo(int argc, char* argv[])
 	}
 
 	if (~flag & _n)
-		write(fdout, next_line, 3);
+		printf("%s",next_line);
+		//write(fdout, next_line, 3);
 }
 
 //man
@@ -760,6 +782,7 @@ void show_man_page(int argc, char *argv[])
 	write(fdout, "DESCRIPTION: ", 14);
 	write(fdout, cmd_data[i].description, strlen(cmd_data[i].description) + 1);
 	write(fdout, next_line, 3);
+	printf("%s",next_line);
 }
 
 void show_history(int argc, char *argv[])
@@ -772,6 +795,7 @@ void show_history(int argc, char *argv[])
 			write(fdout, next_line, 3);
 		}
 	}
+	printf("%s",next_line);
 }
 
 int write_blank(int blank_num)
