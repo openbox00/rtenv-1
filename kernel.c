@@ -77,37 +77,42 @@ struct task_control_block tasks[TASK_LIMIT];
  * 0-2 are reserved FDs and are skipped.
  * The server registers itself at /sys/pathserver
 */
-#define PATH_SERVER_NAME "/sys/pathserver"
+#define PATH_SERVER_NAME "/sys/pathserver" // 16 char
 void pathserver()
 {
-	char paths[PIPE_LIMIT - TASK_LIMIT - 3][PATH_MAX];//paths[5][32]
+	char paths[PIPE_LIMIT - TASK_LIMIT - 3][PATH_MAX];//paths[16 - 8 -3 = 5][32] , PATH_MAX is name length maximum???
+													/*	1. 	/dev/tty0/in	
+														2.	/dev/tty0/out
+														3.	/tmp/mqueue/out	
+														4.	/sys/pathserver	*/
 	int npaths = 0;
 	int i = 0;
 	unsigned int plen = 0;
 	unsigned int replyfd = 0;
-	char path[PATH_MAX];
+	char path[PATH_MAX]; //path[32]
 
 	memcpy(paths[npaths++], PATH_SERVER_NAME, sizeof(PATH_SERVER_NAME));
-
+	/* PATHSERVER_FD = 11 */
 	while (1) {
-		read(PATHSERVER_FD, &replyfd, 4);
-		read(PATHSERVER_FD, &plen, 4);
-		read(PATHSERVER_FD, path, plen);
+		read(PATHSERVER_FD, &replyfd, 4); 
+		read(PATHSERVER_FD, &plen, 4);	//decide length
+		read(PATHSERVER_FD, path, plen); 
 
-		if (!replyfd) { /* mkfifo */
+		if (!replyfd) { /* mkfifo */ /*  */
 			int dev;
 			read(PATHSERVER_FD, &dev, 4);
-			memcpy(paths[npaths], path, plen);
-			mknod(npaths + 3 + TASK_LIMIT, 0, dev);
+			memcpy(paths[npaths], path, plen); //copy path plen's length to paths[npaths]
+			mknod(npaths + 3 + TASK_LIMIT, 0, dev);//mknod(npaths + 11 , 0, dev)
 			npaths++;
+			// npaths can't more than 5 , FIX?
 		}
 		else { /* open */
 			/* Search for path */
 			for (i = 0; i < npaths; i++) {
 				if (*paths[i] && strcmp(path, paths[i]) == 0) {
-					i += 3; /* 0-2 are reserved */
-					i += TASK_LIMIT; /* FDs reserved for tasks */
-					write(replyfd, &i, 4);
+					i += 3; /* 0-2 are reserved */ /* WHY??? */
+					i += TASK_LIMIT; /* FDs reserved for tasks */ /*???????????????????*/
+					write(replyfd, &i, 4); // replyfd = &i
 					i = 0;
 					break;
 				}
@@ -577,7 +582,7 @@ int main()
 	task_count++;
 
 	/* Initialize all pipes */
-	for (i = 0; i < PIPE_LIMIT; i++)
+	for (i = 0; i < PIPE_LIMIT; i++)  //PIPE_LIMIT = 16
 		pipes[i].start = pipes[i].end = 0;
 
 	/* Initialize fifos */
@@ -666,9 +671,9 @@ int main()
 			if (tasks[current_task].stack->r0 < PIPE_LIMIT)
 				tasks[current_task].stack->r0 =
 					_mknod(&pipes[tasks[current_task].stack->r0],
-						   tasks[current_task].stack->r2);
+						   tasks[current_task].stack->r2); //input r0's address and dev's number
 			else
-				tasks[current_task].stack->r0 = -1;
+				tasks[current_task].stack->r0 = -1;	//BUG? if r0 > PIPE_LIMIT system always crush?
 			break;
 		case 0x9: /* sleep */
 			if (tasks[current_task].stack->r0 != 0) {
