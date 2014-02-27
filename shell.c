@@ -5,7 +5,7 @@
 
 #include <stddef.h>
 
-#include "systemdef.h"
+#include "kernel.h"
 
 #define MAX_CMDNAME 19
 #define MAX_ARGC 19

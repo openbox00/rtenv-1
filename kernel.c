@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #include "shell.h"
-#include "systemdef.h"
+#include "kernel.h"
 
 
 size_t task_count = 0;
@@ -80,7 +80,7 @@ struct task_control_block tasks[TASK_LIMIT];
 #define PATH_SERVER_NAME "/sys/pathserver"
 void pathserver()
 {
-	char paths[PIPE_LIMIT - TASK_LIMIT - 3][PATH_MAX];
+	char paths[PIPE_LIMIT - TASK_LIMIT - 3][PATH_MAX];//paths[5][32]
 	int npaths = 0;
 	int i = 0;
 	unsigned int plen = 0;
