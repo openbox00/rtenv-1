@@ -11,6 +11,8 @@
 
 size_t task_count = 0;
 
+int enter = 0;
+
 void *memcpy(void *dest, const void *src, size_t n);
 
 int strcmp(const char *a, const char *b) __attribute__ ((naked));
@@ -263,7 +265,13 @@ void first()
 
 	setpriority(0, PRIORITY_LIMIT);
 
-	while(1);
+	/* ref slpbaby */
+	while(1){
+		if(enter){
+			if (!fork()) test();
+			enter = 0;	
+		}
+	}
 }
 
 struct pipe_ringbuffer {

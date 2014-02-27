@@ -20,6 +20,8 @@ extern struct task_control_block tasks[TASK_LIMIT];
 
 extern size_t task_count;
 
+extern int enter;
+
 /*Global Variables*/
 char next_line[3] = {'\n','\r','\0'};
 char cmd[HISTORY_COUNT][CMDBUF_SIZE];
@@ -34,6 +36,7 @@ void show_cmd_info(int argc, char *argv[]);
 void show_task_info(int argc, char *argv[]);
 void show_man_page(int argc, char *argv[]);
 void show_history(int argc, char *argv[]);
+void show_fork_info(int argc, char *argv[]);
 
 /* Enumeration for command types. */
 enum {
@@ -43,6 +46,7 @@ enum {
 	CMD_HISTORY,
 	CMD_MAN,
 	CMD_PS,
+	CMD_FORK,
 	CMD_COUNT
 } CMD_TYPE;
 /* Structure for command handler. */
@@ -57,7 +61,8 @@ const hcmd_entry cmd_data[CMD_COUNT] = {
 	[CMD_HELP] = {.cmd = "help", .func = show_cmd_info, .description = "List all commands you can use."},
 	[CMD_HISTORY] = {.cmd = "history", .func = show_history, .description = "Show latest commands entered."}, 
 	[CMD_MAN] = {.cmd = "man", .func = show_man_page, .description = "Manual pager."},
-	[CMD_PS] = {.cmd = "ps", .func = show_task_info, .description = "List all the processes."}
+	[CMD_PS] = {.cmd = "ps", .func = show_task_info, .description = "List all the processes."},
+	[CMD_FORK] = {.cmd = "fork", .func = show_fork_info, .description = "fork process."}
 };
 
 /* Structure for environment variables. */
@@ -121,6 +126,20 @@ int fill_arg(char *const dest, const char *argv)
 	*buf = '\0';
 
 	return buf - dest;
+}
+
+//fork
+void show_fork_info(int argc, char* argv[])
+{
+	enter = 1;		
+
+}
+
+void test()
+{
+	setpriority(0, 23);
+	while(1)
+		sleep(100);
 }
 
 //export
@@ -421,3 +440,4 @@ void shell()
 		check_keyword();	
 	}
 }
+
