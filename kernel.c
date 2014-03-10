@@ -11,8 +11,6 @@
 
 size_t task_count = 0;
 
-int enter = 0;
-
 void *memcpy(void *dest, const void *src, size_t n);
 
 int strcmp(const char *a, const char *b) __attribute__ ((naked));
@@ -262,16 +260,11 @@ void first()
 	if (!fork()) setpriority(0, 0), serialin(USART2, USART2_IRQn);
 	if (!fork()) rs232_xmit_msg_task();
 	if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), shell();
+	if (!fork()) setpriority(0, PRIORITY_DEFAULT ), loader();
 
 	setpriority(0, PRIORITY_LIMIT);
 
-	/* ref slpbaby */
-	while(1){
-		if(enter){
-			if (!fork()) test();
-			enter = 0;	
-		}
-	}
+	while(1);
 }
 
 struct pipe_ringbuffer {

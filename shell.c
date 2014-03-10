@@ -20,7 +20,6 @@ extern struct task_control_block tasks[TASK_LIMIT];
 
 extern size_t task_count;
 
-extern int enter;
 
 /*Global Variables*/
 char next_line[3] = {'\n','\r','\0'};
@@ -128,18 +127,37 @@ int fill_arg(char *const dest, const char *argv)
 	return buf - dest;
 }
 
+/**/
+typedef struct {
+	unsigned int fork;
+	void (*function)(void);
+} loader_info;
+
+loader_info l_info = {
+	.fork = 0,
+	.function = NULL
+};
+
+void loader(void)
+{	
+	while(1){
+		if(l_info.fork){
+			l_info.fork = 0;
+			if(task_count < TASK_LIMIT){
+				if (!fork()) setpriority(0, PRIORITY_DEFAULT - 10), shell();
+			}else {
+				int fd = open("/dev/tty0/in", 0);
+				write(fd, "ERROR", 6);
+				write(fd, "\n", 1);
+			}
+		}
+	}
+}
 //fork
 void show_fork_info(int argc, char* argv[])
 {
-	enter = 1;		
+	l_info.fork = 1;
 
-}
-
-void test()
-{
-	setpriority(0, 23);
-	while(1)
-		sleep(100);
 }
 
 //export
@@ -231,7 +249,7 @@ void show_cmd_info(int argc, char* argv[])
 	write(fdout, &help_desp, sizeof(help_desp));
 	for (i = 0; i < CMD_COUNT; i++) {
 		write(fdout, cmd_data[i].cmd, strlen(cmd_data[i].cmd) + 1);
-		write(fdout, "\t: ", 3);
+		write(fdout, "\t:", 5);
 		write(fdout, cmd_data[i].description, strlen(cmd_data[i].description) + 1);
 		write(fdout, next_line, 3);
 	}
