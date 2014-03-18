@@ -7,9 +7,17 @@
 
 #include "shell.h"
 #include "kernel.h"
+
 #ifdef DEBUG
 #include "unit_test.h"
 #endif
+
+#include <ctype.h> //test ctype
+void *malloc(size_t size)
+{
+	static char m[1024] = {0};
+	return m;
+}
 
 
 size_t task_count = 0;
