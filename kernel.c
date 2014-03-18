@@ -7,6 +7,9 @@
 
 #include "shell.h"
 #include "kernel.h"
+#ifdef DEBUG
+#include "unit_test.h"
+#endif
 
 
 size_t task_count = 0;
@@ -726,6 +729,8 @@ int main()
 			i++;
 		current_task = task_pop(&ready_list[i])->pid;
 	}
-
+#ifdef DEBUG
+	unit_test();
+#endif
 	return 0;
 }
